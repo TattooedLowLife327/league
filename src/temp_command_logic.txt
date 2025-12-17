@@ -1,0 +1,126 @@
+New logic needed for line 492-521:
+
+      // Validate command
+      if (isCommandAttempt) {
+        // Check if it's a valid command
+        const isScheduleCommand = message.trim().toLowerCase().startsWith('!schedule');
+        const isRescheduleCommand = message.trim().toLowerCase().startsWith('!reschedule');
+        const isForfeitCommand = message.trim().toLowerCase().startsWith('!forfeit');
+        const isIssueCommand = message.trim().toLowerCase().startsWith('!issue');
+        
+        if (!isScheduleCommand && !isRescheduleCommand && !isForfeitCommand && !isIssueCommand) {
+          // Command is misspelled
+          const systemMessage = {
+            id: messages.length + 1,
+            sender: "system" as const,
+            text: "Please resubmit command with proper spelling and format\nAvailable commands:\n!schedule [day] [time]\n!reschedule [day] [time]\n!forfeit\n!issue [description]",
+            timestamp: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+          };
+          setMessages([...messages, systemMessage]);
+          setMessage("");
+          return;
+        }
+        
+        if (isScheduleCommand && !scheduleDateTime) {
+          // !schedule command but no date/time provided
+          const systemMessage = {
+            id: messages.length + 1,
+            sender: "system" as const,
+            text: "Please resubmit command with proper spelling and format\nex: !schedule Friday 8pm",
+            timestamp: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+          };
+          setMessages([...messages, systemMessage]);
+          setMessage("");
+          return;
+        }
+        
+        if (isRescheduleCommand && !rescheduleDateTime) {
+          // !reschedule command but no date/time provided
+          const systemMessage = {
+            id: messages.length + 1,
+            sender: "system" as const,
+            text: "Please resubmit command with proper spelling and format\nex: !reschedule Friday 8pm",
+            timestamp: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+          };
+          setMessages([...messages, systemMessage]);
+          setMessage("");
+          return;
+        }
+        
+        if (isIssueCommand && !issueDescription) {
+          // !issue command but no description provided
+          const systemMessage = {
+            id: messages.length + 1,
+            sender: "system" as const,
+            text: "Please resubmit command with proper spelling and format\nex: !issue Opponent claims different score",
+            timestamp: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+          };
+          setMessages([...messages, systemMessage]);
+          setMessage("");
+          return;
+        }
+      }
+      
+      const newMessage = {
+        id: messages.length + 1,
+        sender: "user" as const,
+        text: message,
+        timestamp: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+      };
+      setMessages([...messages, newMessage]);
+      
+      // Handle !schedule command
+      if (scheduleDateTime) {
+        const correctedDateTime = fixDayOfWeek(scheduleDateTime);
+        
+        // Check if day was corrected (fuzzy matched)
+        if (correctedDateTime !== scheduleDateTime) {
+          // Day was auto-corrected, show confirmation popup
+          setSuggestionConfirmation({
+            original: scheduleDateTime,
+            corrected: correctedDateTime,
+          });
+          setMessage("");
+          return;
+        }
+        
+        setPendingSchedule({
+          messageId: newMessage.id,
+          dateTime: correctedDateTime,
+          userConfirmed: true, // User auto-confirms their own suggestion
+          opponentConfirmed: false,
+        });
+        
+        // Immediately update Overview with pending status
+        onScheduleConfirmed(correctedDateTime, true);
+      }
+      
+      // Handle !reschedule command
+      if (rescheduleDateTime) {
+        const correctedDateTime = fixDayOfWeek(rescheduleDateTime);
+        
+        // Check if day was corrected (fuzzy matched)
+        if (correctedDateTime !== rescheduleDateTime) {
+          // Day was auto-corrected, show confirmation popup
+          setSuggestionConfirmation({
+            original: rescheduleDateTime,
+            corrected: correctedDateTime,
+          });
+          setMessage("");
+          return;
+        }
+        
+        setPendingSchedule({
+          messageId: newMessage.id,
+          dateTime: correctedDateTime,
+          userConfirmed: true,
+          opponentConfirmed: false,
+        });
+        
+        // Update Overview with new pending schedule
+        onScheduleConfirmed(correctedDateTime, true);
+      }
+      
+      setMessage("");
+    }
+  };
