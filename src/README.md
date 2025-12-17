@@ -4,6 +4,12 @@ A mobile-first dashboard interface for competitive gaming leagues with widget-ba
 
 ![Dashboard Preview](https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop)
 
+## ⚠️ Important: Backend Integration Required
+
+This is a **frontend-only** dashboard template. All mock data has been removed and you will need to integrate it with your own backend API to make it functional.
+
+See [DATA_INTEGRATION_GUIDE.md](./DATA_INTEGRATION_GUIDE.md) for detailed instructions on connecting to your backend.
+
 ## Features
 
 ### 🏆 League Overview Widget
@@ -54,6 +60,20 @@ A mobile-first dashboard interface for competitive gaming leagues with widget-ba
 - Usage instructions
 - Keyboard shortcuts and tips
 
+### 👑 Admin View (OWNER / THE_MAN roles)
+- Toggle between Player View and Admin View
+- **Overview Widget** shows league-wide stats:
+  - Total players count
+  - Pending approvals with notifications
+  - Payment status breakdown
+  - Current week match completion progress
+- **Management Widget** with three tabs:
+  - **Pending**: Approve/reject new player applications with auto-suggested divisions
+  - **Players**: View all players grouped by division, edit records, set division leaders, DQ/reinstate players
+  - **Alternates**: Manage waitlist and promote players to active roster
+- **Send Announcements**: Broadcast messages to all league participants
+- Click any player to view their full profile
+
 ## Tech Stack
 
 - **React** - UI framework
@@ -94,6 +114,16 @@ npm run dev
 ```
 
 4. Open [http://localhost:5173](http://localhost:5173) in your browser
+
+## What You'll See
+
+Since all mock data has been removed, the dashboard will appear empty when you first run it. This is expected! You'll see:
+- Empty standings list
+- No scheduled matches
+- Empty user profile
+- No messages
+
+To populate the dashboard with data, follow the [DATA_INTEGRATION_GUIDE.md](./DATA_INTEGRATION_GUIDE.md) to connect your backend API.
 
 ## Usage
 

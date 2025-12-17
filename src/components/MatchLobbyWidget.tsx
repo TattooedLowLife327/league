@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { WarningAlt } from "@carbon/icons-react";
 
-// Current user info
+// Current user info - Replace with your API data
 const currentUser = {
-  name: "You",
-  avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop",
+  name: "",
+  avatar: "",
 };
 
 export function MatchLobbyWidget({ 
@@ -32,11 +32,6 @@ export function MatchLobbyWidget({
       const now = new Date();
       const diff = matchTime.getTime() - now.getTime();
       setTimeUntilMatch(Math.max(0, Math.floor(diff / 1000)));
-      
-      // Simulate opponent ready at 1 minute
-      if (diff <= 60000 && diff > 0) {
-        setOpponentReady(true);
-      }
     }, 1000);
 
     return () => clearInterval(interval);
@@ -72,16 +67,10 @@ export function MatchLobbyWidget({
 
   const handleSubmitScore = () => {
     setMatchSubmitted(true);
-    
-    // Simulate opponent submission - 70% chance they agree
-    setTimeout(() => {
-      const opponentAgrees = Math.random() > 0.3;
-      if (opponentAgrees) {
-        onMatchComplete(true);
-      } else {
-        setScoreDisputed(true);
-      }
-    }, 1500);
+    // TODO: Send score to backend API
+    // Backend should handle opponent confirmation and disputes
+    // For now, just call onMatchComplete
+    onMatchComplete(true);
   };
 
   const canShowReady = timeUntilMatch <= 120 && timeUntilMatch > 0;

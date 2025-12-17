@@ -197,3 +197,13 @@ html {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Additional scrollbar hide utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

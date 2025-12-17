@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Send, WarningAlt, CheckmarkOutline, Time, Close, Information } from "@carbon/icons-react";
+import { Crown, Edit, Save, Megaphone, Shield, MessageCircle, Power } from "lucide-react";
 import { MatchLobbyWidget } from "./MatchLobbyWidget";
 
 // Import payment app icons
@@ -11,276 +12,164 @@ import venmoIcon from "figma:asset/5072126c2afea515d933acc501d82ec57bcaf991.png"
 // Softer spring animation curve
 const softSpringEasing = "cubic-bezier(0.25, 1.1, 0.4, 1)";
 
-// League info data
+// League info data - Replace with your API data
 const leagueInfo = {
-  format: "Standard 1v1",
-  prizePerWin: 50,
-  currentWeek: 12,
-  totalWeeks: 16,
-  potTotal: 2400,
-  payouts: [
-    { place: "1st", amount: 1000 },
-    { place: "2nd", amount: 600 },
-    { place: "3rd", amount: 400 },
-  ],
+  format: "",
+  prizePerWin: 0,
+  currentWeek: 0,
+  totalWeeks: 0,
+  potTotal: 0,
+  payouts: [],
 };
 
-// User's current status
+// User's current status - Replace with your API data
 const userStatus = {
-  standingsPlace: 3,
-  paymentStatus: "due", // "paid", "due", "late"
-  weekMatchStatus: "completed", // "completed", "pending", "late"
+  standingsPlace: 0,
+  paymentStatus: "paid", // "paid", "due", "late"
+  weekMatchStatus: "pending", // "completed", "pending", "late"
 };
 
-// Current user info
+// Current user info - Replace with your API data
 const currentUser = {
-  name: "You",
-  avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop",
+  name: "",
+  avatar: "",
+  role: "OWNER", // "OWNER", "THE_MAN", or "PLAYER"
 };
 
-// Mock user data with ratings
-const mockUsers = [
-  {
-    id: 1,
-    name: "Sarah Johnson",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
-    crRating: 9.2,
-    o1Rating: 8.8,
-    overallRating: 9.0,
-    wins: 8,
-  },
-  {
-    id: 2,
-    name: "Michael Chen",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
-    crRating: 8.9,
-    o1Rating: 9.1,
-    overallRating: 9.0,
-    wins: 7,
-  },
-  {
-    id: 3,
-    name: "Emily Rodriguez",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
-    crRating: 8.7,
-    o1Rating: 8.9,
-    overallRating: 8.8,
-    wins: 6,
-  },
-  {
-    id: 4,
-    name: "James Wilson",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
-    crRating: 8.5,
-    o1Rating: 8.6,
-    overallRating: 8.6,
-    wins: 6,
-  },
-  {
-    id: 5,
-    name: "Priya Patel",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
-    crRating: 8.3,
-    o1Rating: 8.4,
-    overallRating: 8.4,
-    wins: 5,
-  },
-  {
-    id: 6,
-    name: "David Kim",
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop",
-    crRating: 8.1,
-    o1Rating: 8.3,
-    overallRating: 8.2,
-    wins: 4,
-  },
-  {
-    id: 7,
-    name: "Lisa Anderson",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop",
-    crRating: 7.9,
-    o1Rating: 8.0,
-    overallRating: 8.0,
-    wins: 4,
-  },
-  {
-    id: 8,
-    name: "Alex Martinez",
-    avatar: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=100&h=100&fit=crop",
-    crRating: 7.7,
-    o1Rating: 7.8,
-    overallRating: 7.8,
-    wins: 3,
-  },
-];
+// Users data - Replace with your API data
+const mockUsers: any[] = [];
 
-// Current week matchup
+// Current week matchup - Replace with your API data
 const currentMatchup = {
-  id: 1,
+  id: 0,
   opponent: {
-    name: "Michael Chen",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
-    rating: 9.0,
+    name: "",
+    avatar: "",
+    rating: 0,
   },
-  week: 12,
-  paymentStatus: "paid",
-  scheduledDate: "Dec 20, 2025",
-  scheduledTime: "7:00 PM EST",
-  canSchedule: true,
-  isConfirmed: true, // both users confirmed
+  week: 0,
+  paymentStatus: "unpaid",
+  scheduledDate: "",
+  scheduledTime: "",
+  canSchedule: false,
+  isConfirmed: false,
 };
 
-// Full schedule data
-const fullSchedule = [
-  {
-    id: 1,
-    opponent: {
-      name: "Michael Chen",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
-      rating: 9.0,
-    },
-    week: 12,
-    paymentStatus: "paid",
-    scheduledDate: "Dec 20, 2025",
-    scheduledTime: "7:00 PM EST",
-    result: null,
-    finalScore: null,
-  },
-  {
-    id: 2,
-    opponent: {
-      name: "Emily Rodriguez",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
-      rating: 8.8,
-    },
-    week: 13,
-    paymentStatus: "paid",
-    scheduledDate: null,
-    scheduledTime: null,
-    result: null,
-    finalScore: null,
-  },
-  {
-    id: 3,
-    opponent: {
-      name: "James Wilson",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
-      rating: 8.6,
-    },
-    week: 14,
-    paymentStatus: "unpaid",
-    scheduledDate: null,
-    scheduledTime: null,
-    result: null,
-    finalScore: null,
-  },
-  {
-    id: 4,
-    opponent: {
-      name: "Sarah Johnson",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
-      rating: 9.0,
-    },
-    week: 11,
-    paymentStatus: "paid",
-    scheduledDate: "Dec 13, 2025",
-    scheduledTime: "8:00 PM EST",
-    result: "win",
-    finalScore: { user: 3, opponent: 1 },
-  },
-  {
-    id: 5,
-    opponent: {
-      name: "David Kim",
-      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop",
-      rating: 8.2,
-    },
-    week: 10,
-    paymentStatus: "paid",
-    scheduledDate: "Dec 6, 2025",
-    scheduledTime: "6:00 PM EST",
-    result: "loss",
-    finalScore: { user: 1, opponent: 3 },
-  },
-  {
-    id: 6,
-    opponent: {
-      name: "Priya Patel",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
-      rating: 8.4,
-    },
-    week: 9,
-    paymentStatus: "paid",
-    scheduledDate: "Nov 29, 2025",
-    scheduledTime: "7:30 PM EST",
-    result: "win",
-    finalScore: { user: 3, opponent: 2 },
-  },
-  {
-    id: 7,
-    opponent: {
-      name: "Lisa Anderson",
-      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop",
-      rating: 8.0,
-    },
-    week: 8,
-    paymentStatus: "paid",
-    scheduledDate: "Nov 22, 2025",
-    scheduledTime: "6:30 PM EST",
-    result: "win",
-    finalScore: { user: 3, opponent: 0 },
-  },
-];
+// Full schedule data - Replace with your API data
+const fullSchedule: any[] = [];
 
-// Payment options
+// Payment options - Replace with your payment details
 const paymentOptions = [
   {
     name: "Venmo",
     icon: venmoIcon,
     url: "https://venmo.com/",
-    username: "TheTattooedLowLife",
+    username: "",
   },
   {
     name: "PayPal",
     icon: paypalIcon,
     url: "https://www.paypal.com/",
-    username: "tattooedlowlife327@gmail.com",
+    username: "",
   },
   {
     name: "Chime",
     icon: cashAppIcon,
     url: "https://www.chime.com/",
-    username: "TattooedLowLife",
+    username: "",
   },
 ];
 
-// Mock messages data
-const mockMessages = [
+// Messages data - Replace with your API data
+const mockMessages: any[] = [];
+
+// Divisions data - Replace with your API data
+const divisions: any[] = [
+  { id: "div1", name: "Division 1", playerCount: 12, color: "blue" },
+  { id: "div2", name: "Division 2", playerCount: 10, color: "purple" },
+  { id: "div3", name: "Division 3", playerCount: 11, color: "green" },
+  { id: "div4", name: "Division 4", playerCount: 9, color: "orange" },
+]; // Array of { id, name, playerCount, color }
+
+// Admin data - Replace with your API data
+const pendingApprovals: any[] = []; // Players awaiting approval
+const allPlayers: any[] = [
   {
-    id: 1,
-    sender: "opponent",
-    text: "Hey! When are you free to play this week?",
-    timestamp: "Dec 16, 2:30 PM",
+    id: "player1",
+    name: "Alex Thunder",
+    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop",
+    division: "Division 1",
+    wins: 8,
+    losses: 2,
+    points: 24,
+    overall_numeric: 9.2,
+    is_division_leader: true,
+    is_dqd: false,
   },
   {
-    id: 2,
-    sender: "user",
-    text: "I'm usually free after 7pm on weekdays",
-    timestamp: "Dec 16, 3:15 PM",
+    id: "player2",
+    name: "Jordan Steel",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+    division: "Division 1",
+    wins: 6,
+    losses: 4,
+    points: 18,
+    overall_numeric: 8.7,
+    is_division_leader: false,
+    is_dqd: false,
   },
   {
-    id: 3,
-    sender: "opponent",
-    text: "Perfect! How about Friday at 7:30pm?",
-    timestamp: "Dec 16, 4:00 PM",
+    id: "player3",
+    name: "Chris Viper",
+    avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop",
+    division: "Division 2",
+    wins: 5,
+    losses: 3,
+    points: 15,
+    overall_numeric: 7.8,
+    is_division_leader: true,
+    is_dqd: false,
   },
   {
-    id: 4,
-    sender: "user",
-    text: "Friday works for me! See you then 🎯",
-    timestamp: "Dec 16, 4:05 PM",
+    id: "player4",
+    name: "Sam Phoenix",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+    division: "Division 3",
+    wins: 7,
+    losses: 1,
+    points: 21,
+    overall_numeric: 8.5,
+    is_division_leader: true,
+    is_dqd: false,
   },
-];
+  {
+    id: "player5",
+    name: "Taylor Blaze",
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
+    division: "Division 4",
+    wins: 4,
+    losses: 6,
+    points: 12,
+    overall_numeric: 7.2,
+    is_division_leader: true,
+    is_dqd: false,
+  },
+]; // All approved players with divisions
+const alternates: any[] = []; // Waitlist/substitute players
+const leagueStats = {
+  totalPlayers: 5,
+  pendingApprovalsCount: 0,
+  paidCount: 4,
+  dueCount: 1,
+  lateCount: 0,
+  completedMatches: 5,
+  totalMatches: 10,
+};
+
+// League status - Replace with your API data
+const leagueStatus = {
+  hasStarted: false, // Set to true once league starts to hide pending approvals
+};
 
 function MessagingModal({ 
   opponent, 
@@ -990,18 +879,9 @@ function MessagingModal({
                         <span className="font-['Lexend:Regular',_sans-serif] text-[11px] text-neutral-500">{opponent.name}</span>
                       </div>
                     </div>
-                    <button
-                      onClick={handleOpponentConfirm}
-                      className="bg-green-600/80 hover:bg-green-600 backdrop-blur-sm text-white font-['Lexend:SemiBold',_sans-serif] text-[11px] px-3 py-1.5 rounded-lg transition-all w-full"
-                    >
-                      Simulate Opponent Confirmation
-                    </button>
-                    <button
-                      onClick={handleOpponentDecline}
-                      className="bg-red-600/80 hover:bg-red-600 backdrop-blur-sm text-white font-['Lexend:SemiBold',_sans-serif] text-[11px] px-3 py-1.5 rounded-lg transition-all w-full mt-2"
-                    >
-                      Simulate Opponent Decline
-                    </button>
+                    <div className="font-['Lexend:Regular',_sans-serif] text-[11px] text-neutral-400 mt-3">
+                      Waiting for opponent confirmation...
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1029,29 +909,7 @@ function MessagingModal({
         </div>
 
         {/* Input Area */}
-        <div className="p-4 border-t border-neutral-700/50 flex-shrink-0 bg-neutral-800/30 backdrop-blur-sm space-y-2">
-          {/* Demo Button */}
-          <button
-            onClick={() => {
-              const demoMessage = {
-                id: messages.length + 1,
-                sender: "opponent" as const,
-                text: "Hey! Just checking in about our match",
-                timestamp: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
-              };
-              setMessages([...messages, demoMessage]);
-              // Set unread when message arrives and modal is open
-              if (onNewMessage) {
-                setTimeout(() => {
-                  onNewMessage();
-                }, 100);
-              }
-            }}
-            className="w-full bg-neutral-700/50 hover:bg-neutral-700 text-neutral-300 font-['Lexend:Regular',_sans-serif] text-[11px] px-3 py-1.5 rounded-lg transition-all"
-          >
-            📨 Demo: Receive New Message (triggers unread indicator)
-          </button>
-          
+        <div className="p-4 border-t border-neutral-700/50 flex-shrink-0 bg-neutral-800/30 backdrop-blur-sm">
           <div className="flex gap-2">
             <input
               type="text"
@@ -1081,6 +939,7 @@ function MessagingModal({
 
 function StandingsWidget({ isExpanded, setIsExpanded }: { isExpanded: boolean; setIsExpanded: (val: boolean) => void }) {
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedDivision, setSelectedDivision] = useState<string>("all");
   
   // Calculate playoff spots based on number of players
   const getPlayoffSpots = (totalPlayers: number) => {
@@ -1167,6 +1026,33 @@ function StandingsWidget({ isExpanded, setIsExpanded }: { isExpanded: boolean; s
               >
                 <ChevronRight size={20} />
               </button>
+            </div>
+
+            {/* Division Tabs */}
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-neutral-700/50 flex-shrink-0 overflow-x-auto">
+              <button
+                onClick={() => setSelectedDivision("all")}
+                className={`font-['Lexend:Regular',_sans-serif] text-[12px] px-3 py-1.5 rounded-md whitespace-nowrap transition-all ${
+                  selectedDivision === "all"
+                    ? 'bg-purple-600 text-white'
+                    : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50'
+                }`}
+              >
+                All Players
+              </button>
+              {divisions.map((division) => (
+                <button
+                  key={division.id}
+                  onClick={() => setSelectedDivision(division.id)}
+                  className={`font-['Lexend:Regular',_sans-serif] text-[12px] px-3 py-1.5 rounded-md whitespace-nowrap transition-all ${
+                    selectedDivision === division.id
+                      ? 'bg-purple-600 text-white'
+                      : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50'
+                  }`}
+                >
+                  {division.name} <span className="text-neutral-400">({division.playerCount})</span>
+                </button>
+              ))}
             </div>
 
             {/* Widget Content */}
@@ -1351,11 +1237,11 @@ function StandingsWidget({ isExpanded, setIsExpanded }: { isExpanded: boolean; s
                   .filter(u => u.id !== selectedUser.id)
                   .slice(0, 5)
                   .map((opponent) => {
-                    // Generate mock game data
-                    const gamesPlayed = Math.floor(Math.random() * 3) + 1;
-                    const avg501 = Math.floor(Math.random() * 40) + 40; // 40-80
-                    const avgCR = Math.floor(Math.random() * 30) + 50; // 50-80
-                    const avgCH = Math.floor(Math.random() * 25) + 30; // 30-55
+                    // Replace with real game data from your API
+                    const gamesPlayed = 0;
+                    const avg501 = 0;
+                    const avgCR = 0;
+                    const avgCH = 0;
                     
                     return (
                       <div key={opponent.id} className="bg-neutral-800/30 rounded-lg p-3">
@@ -1409,6 +1295,530 @@ function StandingsWidget({ isExpanded, setIsExpanded }: { isExpanded: boolean; s
         </div>
       )}
     </>
+  );
+}
+
+function ManagementWidget({ divisionColors }: { divisionColors: Record<string, string> }) {
+  const [activeTab, setActiveTab] = useState<"pending" | "players" | "alternates">(leagueStatus.hasStarted ? "players" : "pending");
+  const [selectedPlayer, setSelectedPlayer] = useState<any | null>(null);
+  const [expandedDivision, setExpandedDivision] = useState<string | null>(null);
+  const [editingPlayer, setEditingPlayer] = useState<any | null>(null);
+  const [editValues, setEditValues] = useState<{ wins: number; losses: number; points: number }>({ wins: 0, losses: 0, points: 0 });
+  const [dqModalPlayer, setDqModalPlayer] = useState<any | null>(null);
+  const [dqReason, setDqReason] = useState("");
+  const [forfeitModalPlayer, setForfeitModalPlayer] = useState<any | null>(null);
+  const [forfeitReason, setForfeitReason] = useState("");
+  const [messageModalPlayer, setMessageModalPlayer] = useState<any | null>(null);
+
+  // Group players by division
+  const playersByDivision = allPlayers.reduce((acc: any, player: any) => {
+    if (!acc[player.division]) {
+      acc[player.division] = [];
+    }
+    acc[player.division].push(player);
+    return acc;
+  }, {});
+
+  const suggestDivision = (rating: number) => {
+    if (rating >= 9.0) return "Premier";
+    if (rating >= 8.0) return "Elite";
+    if (rating >= 7.0) return "Advanced";
+    return "Open";
+  };
+
+  const getDivisionColorClasses = (divisionName: string) => {
+    const division = divisions.find(d => d.name === divisionName);
+    if (!division) return "";
+    
+    const currentColor = divisionColors[division.id] || division.color;
+    
+    // Check if it's a hue value
+    if (currentColor.startsWith('hue-')) {
+      return `hue-color-${currentColor}`;
+    }
+    
+    const colorMap: Record<string, string> = {
+      blue: "bg-blue-500/10 border-l-2 border-l-blue-500/50",
+      purple: "bg-purple-500/10 border-l-2 border-l-purple-500/50",
+      green: "bg-green-500/10 border-l-2 border-l-green-500/50",
+      orange: "bg-orange-500/10 border-l-2 border-l-orange-500/50",
+      red: "bg-red-500/10 border-l-2 border-l-red-500/50",
+      yellow: "bg-yellow-500/10 border-l-2 border-l-yellow-500/50",
+      pink: "bg-pink-500/10 border-l-2 border-l-pink-500/50",
+      cyan: "bg-cyan-500/10 border-l-2 border-l-cyan-500/50",
+      indigo: "bg-indigo-500/10 border-l-2 border-l-indigo-500/50",
+      lime: "bg-lime-500/10 border-l-2 border-l-lime-500/50",
+      teal: "bg-teal-500/10 border-l-2 border-l-teal-500/50",
+      fuchsia: "bg-fuchsia-500/10 border-l-2 border-l-fuchsia-500/50",
+    };
+    
+    return colorMap[currentColor] || "";
+  };
+
+  return (
+    <div className="bg-[#000000] rounded-2xl border border-neutral-800 overflow-hidden flex-1">
+      {/* Widget Header */}
+      <div className="flex items-center justify-center px-4 py-3 border-b border-neutral-800">
+        <div className="font-['Lexend:SemiBold',_sans-serif] text-[13px] text-neutral-50">
+          MANAGEMENT
+        </div>
+      </div>
+
+      {/* Tab Bar */}
+      <div className="flex border-b border-neutral-800">
+        {!leagueStatus.hasStarted && (
+          <button
+            onClick={() => setActiveTab("pending")}
+            className={`flex-1 px-4 py-3 font-['Lexend:Regular',_sans-serif] text-[11px] transition-colors ${
+              activeTab === "pending"
+                ? "bg-neutral-900 text-neutral-50"
+                : "text-neutral-400 hover:text-neutral-200"
+            }`}
+          >
+            Pending {pendingApprovals.length > 0 && (
+              <span className="ml-1 bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded-full text-[9px]">
+                {pendingApprovals.length}
+              </span>
+            )}
+          </button>
+        )}
+        <button
+          onClick={() => setActiveTab("players")}
+          className={`flex-1 px-4 py-3 font-['Lexend:Regular',_sans-serif] text-[11px] transition-colors ${
+            activeTab === "players"
+              ? "bg-neutral-900 text-neutral-50"
+              : "text-neutral-400 hover:text-neutral-200"
+          }`}
+        >
+          Players
+        </button>
+        <button
+          onClick={() => setActiveTab("alternates")}
+          className={`flex-1 px-4 py-3 font-['Lexend:Regular',_sans-serif] text-[11px] transition-colors ${
+            activeTab === "alternates"
+              ? "bg-neutral-900 text-neutral-50"
+              : "text-neutral-400 hover:text-neutral-200"
+          }`}
+        >
+          Alternates
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="overflow-y-auto h-[calc(600px-120px)] p-4">
+        {activeTab === "pending" && !leagueStatus.hasStarted && (
+          <div className="space-y-3">
+            {pendingApprovals.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="font-['Lexend:Regular',_sans-serif] text-[12px] text-neutral-500">
+                  No pending approvals
+                </div>
+              </div>
+            ) : (
+              pendingApprovals.map((player) => (
+                <div key={player.id} className="bg-neutral-900 rounded-lg p-3 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="relative size-10 rounded-full overflow-hidden bg-neutral-800 shrink-0">
+                      <img src={player.avatar} alt={player.name} className="size-full object-cover" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-['Lexend:SemiBold',_sans-serif] text-[12px] text-neutral-50">
+                        {player.name}
+                      </div>
+                      <div className="font-['Lexend:Regular',_sans-serif] text-[10px] text-neutral-400">
+                        Rating: {player.overall_numeric} • {player.submitted_date}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <select 
+                      className="flex-1 bg-neutral-800 text-neutral-200 rounded px-2 py-1.5 font-['Lexend:Regular',_sans-serif] text-[11px] border border-neutral-700"
+                      defaultValue={suggestDivision(player.overall_numeric)}
+                    >
+                      <option value="Premier">Premier</option>
+                      <option value="Elite">Elite</option>
+                      <option value="Advanced">Advanced</option>
+                      <option value="Open">Open</option>
+                    </select>
+                    <button className="bg-green-600/80 hover:bg-green-600 p-2 rounded-lg transition-colors">
+                      <CheckmarkOutline size={16} className="text-white" />
+                    </button>
+                    <button className="bg-red-600/80 hover:bg-red-600 p-2 rounded-lg transition-colors">
+                      <Close size={16} className="text-white" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {activeTab === "players" && (
+          <div className="space-y-3">
+            {Object.keys(playersByDivision).length === 0 ? (
+              <div className="text-center py-8">
+                <div className="font-['Lexend:Regular',_sans-serif] text-[12px] text-neutral-500">
+                  No players yet
+                </div>
+              </div>
+            ) : (
+              Object.entries(playersByDivision).map(([division, players]: [string, any]) => (
+                <div key={division} className="bg-neutral-900 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setExpandedDivision(expandedDivision === division ? null : division)}
+                    className="w-full px-4 py-3 flex items-center justify-between hover:bg-neutral-800 transition-colors"
+                  >
+                    <div className="font-['Lexend:SemiBold',_sans-serif] text-[12px] text-neutral-50">
+                      {division} <span className="text-neutral-500">({players.length})</span>
+                    </div>
+                    {expandedDivision === division ? <ChevronLeft size={16} className="text-neutral-400 rotate-90" /> : <ChevronRight size={16} className="text-neutral-400" />}
+                  </button>
+                  {expandedDivision === division && (
+                    <div className="border-t border-neutral-800">
+                      {players.map((player: any) => {
+                        const division = divisions.find(d => d.name === player.division);
+                        const currentColor = division ? (divisionColors[division.id] || division.color) : '';
+                        const isHueColor = currentColor.startsWith('hue-');
+                        const hueValue = isHueColor ? parseInt(currentColor.replace('hue-', '')) : null;
+                        
+                        const baseClasses = `border-b border-neutral-800 last:border-0 ${player.is_dqd ? 'opacity-50' : ''}`;
+                        const colorClasses = !isHueColor ? getDivisionColorClasses(player.division) : 'border-l-2';
+                        
+                        return (
+                        <div 
+                          key={player.id} 
+                          className={`${baseClasses} ${colorClasses}`}
+                          style={isHueColor ? {
+                            backgroundColor: `hsl(${hueValue}, 70%, 55%, 0.1)`,
+                            borderLeftColor: `hsl(${hueValue}, 70%, 55%, 0.5)`
+                          } : {}}
+                        >
+                          <button
+                            onClick={() => setSelectedPlayer(selectedPlayer?.id === player.id ? null : player)}
+                            className="w-full px-4 py-2 flex items-center gap-3 hover:bg-neutral-800/50 transition-colors"
+                          >
+                            <div className="relative size-8 rounded-full overflow-hidden bg-neutral-800 shrink-0">
+                              <img src={player.avatar} alt={player.name} className="size-full object-cover" />
+                            </div>
+                            {player.is_division_leader && (
+                              <Crown size={14} className="text-yellow-400" />
+                            )}
+                            <div className="flex-1 text-left">
+                              <div className="font-['Lexend:Regular',_sans-serif] text-[11px] text-neutral-50">
+                                {player.name}
+                              </div>
+                            </div>
+                            <div className="font-['Lexend:Regular',_sans-serif] text-[10px] text-neutral-400">
+                              {player.wins}W-{player.losses}L
+                            </div>
+                          </button>
+                          {selectedPlayer?.id === player.id && (
+                            <div className="px-4 py-3 bg-neutral-800/30 space-y-3">
+                              {player.is_dqd ? (
+                                <>
+                                  <div className="bg-red-900/20 border border-red-700/50 rounded-lg p-2">
+                                    <div className="font-['Lexend:SemiBold',_sans-serif] text-[10px] text-red-400 mb-1">
+                                      DISQUALIFIED
+                                    </div>
+                                    <div className="font-['Lexend:Regular',_sans-serif] text-[10px] text-neutral-400">
+                                      {player.dq_reason}
+                                    </div>
+                                  </div>
+                                  <button className="w-full bg-blue-600/80 hover:bg-blue-600 text-white px-3 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[11px] transition-colors">
+                                    Reinstate Player
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  {editingPlayer?.id === player.id ? (
+                                    <div className="space-y-2">
+                                      <div className="grid grid-cols-3 gap-2">
+                                        <div>
+                                          <label className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-1 block">Wins</label>
+                                          <input
+                                            type="number"
+                                            value={editValues.wins}
+                                            onChange={(e) => setEditValues({...editValues, wins: parseInt(e.target.value) || 0})}
+                                            className="w-full bg-neutral-900 text-neutral-200 rounded px-2 py-1 font-['Lexend:Regular',_sans-serif] text-[11px] border border-neutral-700"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-1 block">Losses</label>
+                                          <input
+                                            type="number"
+                                            value={editValues.losses}
+                                            onChange={(e) => setEditValues({...editValues, losses: parseInt(e.target.value) || 0})}
+                                            className="w-full bg-neutral-900 text-neutral-200 rounded px-2 py-1 font-['Lexend:Regular',_sans-serif] text-[11px] border border-neutral-700"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-1 block">Points</label>
+                                          <input
+                                            type="number"
+                                            value={editValues.points}
+                                            onChange={(e) => setEditValues({...editValues, points: parseInt(e.target.value) || 0})}
+                                            className="w-full bg-neutral-900 text-neutral-200 rounded px-2 py-1 font-['Lexend:Regular',_sans-serif] text-[11px] border border-neutral-700"
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <button 
+                                          onClick={() => setEditingPlayer(null)}
+                                          className="flex-1 bg-green-600/80 hover:bg-green-600 text-white px-3 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[11px] transition-colors flex items-center justify-center gap-1"
+                                        >
+                                          <Save size={14} /> Save
+                                        </button>
+                                        <button 
+                                          onClick={() => setEditingPlayer(null)}
+                                          className="flex-1 bg-neutral-700 hover:bg-neutral-600 text-neutral-200 px-3 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[11px] transition-colors"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-2">
+                                      <button 
+                                        onClick={() => {
+                                          setEditingPlayer(player);
+                                          setEditValues({ wins: player.wins, losses: player.losses, points: player.points });
+                                        }}
+                                        className="w-full bg-neutral-700 hover:bg-neutral-600 text-neutral-200 px-3 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[11px] transition-colors flex items-center justify-center gap-1"
+                                      >
+                                        <Edit size={14} /> Edit Record
+                                      </button>
+                                      
+                                      {/* Action buttons row */}
+                                      <div className="grid grid-cols-3 gap-2">
+                                        <button 
+                                          className="bg-yellow-600/20 hover:bg-yellow-600/30 text-yellow-400 px-3 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[11px] transition-colors flex items-center justify-center gap-1"
+                                          title={player.is_division_leader ? 'Remove Division Leader' : 'Set Division Leader'}
+                                        >
+                                          <Shield size={14} />
+                                        </button>
+                                        <button 
+                                          onClick={() => setMessageModalPlayer(player)}
+                                          className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 px-3 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[11px] transition-colors flex items-center justify-center gap-1"
+                                          title="Message Player"
+                                        >
+                                          <MessageCircle size={14} />
+                                        </button>
+                                        <button 
+                                          onClick={() => setForfeitModalPlayer(player)}
+                                          className="bg-orange-600/20 hover:bg-orange-600/30 text-orange-400 px-3 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[11px] transition-colors flex items-center justify-center gap-1"
+                                          title="Forfeit Player"
+                                        >
+                                          <Power size={14} />
+                                        </button>
+                                      </div>
+
+                                      <button 
+                                        onClick={() => setDqModalPlayer(player)}
+                                        className="w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 px-3 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[11px] transition-colors"
+                                      >
+                                        Disqualify Player
+                                      </button>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {activeTab === "alternates" && (
+          <div className="space-y-3">
+            {alternates.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="font-['Lexend:Regular',_sans-serif] text-[12px] text-neutral-500">
+                  No alternates
+                </div>
+              </div>
+            ) : (
+              alternates.map((player) => (
+                <div key={player.id} className="bg-neutral-900 rounded-lg p-3">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="relative size-10 rounded-full overflow-hidden bg-neutral-800 shrink-0">
+                      <img src={player.avatar} alt={player.name} className="size-full object-cover" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-['Lexend:SemiBold',_sans-serif] text-[12px] text-neutral-50">
+                        {player.name}
+                      </div>
+                      <div className="font-['Lexend:Regular',_sans-serif] text-[10px] text-neutral-400">
+                        Rating: {player.overall_numeric} • Added {player.date_added}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button className="flex-1 bg-blue-600/80 hover:bg-blue-600 text-white px-3 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[11px] transition-colors">
+                      Promote to Active
+                    </button>
+                    <button className="bg-red-600/80 hover:bg-red-600 p-2 rounded-lg transition-colors">
+                      <Close size={16} className="text-white" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* DQ Confirmation Modal */}
+      {dqModalPlayer && createPortal(
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          onClick={() => setDqModalPlayer(null)}
+        >
+          <div
+            className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="font-['Lexend:Bold',_sans-serif] text-[18px] text-neutral-50 mb-4">
+              Disqualify Player
+            </div>
+            <div className="font-['Lexend:Regular',_sans-serif] text-[13px] text-neutral-400 mb-4">
+              Please provide a reason for disqualifying {dqModalPlayer.name}:
+            </div>
+            <textarea
+              value={dqReason}
+              onChange={(e) => setDqReason(e.target.value)}
+              placeholder="Enter reason..."
+              className="w-full bg-neutral-800 text-neutral-200 rounded-lg px-3 py-2 font-['Lexend:Regular',_sans-serif] text-[12px] border border-neutral-700 mb-4 min-h-[100px] resize-none"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  // TODO: API call to DQ player
+                  setDqModalPlayer(null);
+                  setDqReason("");
+                }}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[12px] transition-colors"
+              >
+                Confirm DQ
+              </button>
+              <button
+                onClick={() => {
+                  setDqModalPlayer(null);
+                  setDqReason("");
+                }}
+                className="flex-1 bg-neutral-700 hover:bg-neutral-600 text-neutral-200 px-4 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[12px] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Forfeit Confirmation Modal */}
+      {forfeitModalPlayer && createPortal(
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          onClick={() => setForfeitModalPlayer(null)}
+        >
+          <div
+            className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="font-['Lexend:Bold',_sans-serif] text-[18px] text-neutral-50 mb-4">
+              Forfeit Player
+            </div>
+            <div className="font-['Lexend:Regular',_sans-serif] text-[13px] text-neutral-400 mb-4">
+              Please provide a reason for forfeiting {forfeitModalPlayer.name}:
+            </div>
+            <textarea
+              value={forfeitReason}
+              onChange={(e) => setForfeitReason(e.target.value)}
+              placeholder="Enter reason..."
+              className="w-full bg-neutral-800 text-neutral-200 rounded-lg px-3 py-2 font-['Lexend:Regular',_sans-serif] text-[12px] border border-neutral-700 mb-4 min-h-[100px] resize-none"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  // TODO: API call to forfeit player
+                  setForfeitModalPlayer(null);
+                  setForfeitReason("");
+                }}
+                className="flex-1 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[12px] transition-colors"
+              >
+                Confirm Forfeit
+              </button>
+              <button
+                onClick={() => {
+                  setForfeitModalPlayer(null);
+                  setForfeitReason("");
+                }}
+                className="flex-1 bg-neutral-700 hover:bg-neutral-600 text-neutral-200 px-4 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[12px] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Message Player Modal */}
+      {messageModalPlayer && createPortal(
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          onClick={() => setMessageModalPlayer(null)}
+        >
+          <div
+            className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="relative size-12 rounded-full overflow-hidden bg-neutral-800 shrink-0">
+                <img src={messageModalPlayer.avatar} alt={messageModalPlayer.name} className="size-full object-cover" />
+              </div>
+              <div>
+                <div className="font-['Lexend:Bold',_sans-serif] text-[16px] text-neutral-50">
+                  Message {messageModalPlayer.name}
+                </div>
+                <div className="font-['Lexend:Regular',_sans-serif] text-[11px] text-neutral-400">
+                  Send a direct message
+                </div>
+              </div>
+            </div>
+            <textarea
+              placeholder="Type your message..."
+              className="w-full bg-neutral-800 text-neutral-200 rounded-lg px-3 py-2 font-['Lexend:Regular',_sans-serif] text-[12px] border border-neutral-700 mb-4 min-h-[120px] resize-none"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  // TODO: API call to send message
+                  setMessageModalPlayer(null);
+                }}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[12px] transition-colors flex items-center justify-center gap-2"
+              >
+                <Send size={16} /> Send Message
+              </button>
+              <button
+                onClick={() => setMessageModalPlayer(null)}
+                className="flex-1 bg-neutral-700 hover:bg-neutral-600 text-neutral-200 px-4 py-2 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[12px] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
   );
 }
 
@@ -1599,12 +2009,17 @@ function ScheduleWidget({ onOpenMessages, currentWeekForfeit }: { onOpenMessages
 
                       {/* Result Tag */}
                       <div className="flex items-center justify-center mt-3 pt-2 border-t border-neutral-800">
-                        <div
-                          className={`font-['Lexend:SemiBold',_sans-serif] text-[11px] px-2 py-0.5 rounded uppercase ${getResultColor(
-                            match.result
-                          )}`}
-                        >
-                          {match.result}
+                        <div className="flex items-center gap-2">
+                          {match.disputed && (
+                            <WarningAlt size={16} className="text-yellow-400" title="Score disputed - flagged for review" />
+                          )}
+                          <div
+                            className={`font-['Lexend:SemiBold',_sans-serif] text-[11px] px-2 py-0.5 rounded uppercase ${getResultColor(
+                              match.result
+                            )}`}
+                          >
+                            {match.result}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1691,11 +2106,13 @@ function ScheduleWidget({ onOpenMessages, currentWeekForfeit }: { onOpenMessages
 function LeagueInfoWidget({ 
   onOpenMessages,
   currentMatchSchedule,
-  hasUnreadMessages
+  hasUnreadMessages,
+  isAdminView = false
 }: { 
   onOpenMessages: (opponent: { name: string; avatar: string; rating: number }) => void;
   currentMatchSchedule: { date: string | null; time: string | null; isPending?: boolean; isForfeit?: boolean };
   hasUnreadMessages?: boolean;
+  isAdminView?: boolean;
 }) {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showFormatTooltip, setShowFormatTooltip] = useState(false);
@@ -1708,6 +2125,7 @@ function LeagueInfoWidget({
   };
 
   const getPlaceSuffix = (place: number) => {
+    if (place === 0) return "";
     if (place === 1) return "st";
     if (place === 2) return "nd";
     if (place === 3) return "rd";
@@ -1735,52 +2153,143 @@ function LeagueInfoWidget({
 
         {/* Content */}
         <div className="p-4 space-y-3">
-          {/* User Profile Pic */}
-          <div className="flex justify-center">
-            <div className="relative size-14 rounded-full overflow-hidden bg-neutral-800">
-              <img
-                src={currentUser.avatar}
-                alt={currentUser.name}
-                className="size-full object-cover"
-              />
-            </div>
-          </div>
+          {isAdminView ? (
+            <>
+              {/* League Stats for Admin View */}
+              {/* Total Players */}
+              <div className="bg-neutral-900 rounded-lg p-3">
+                <div className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-1">
+                  Total Players
+                </div>
+                <div className="font-['Lexend:Bold',_sans-serif] text-[18px] text-neutral-50">
+                  {leagueStats.totalPlayers}
+                </div>
+              </div>
 
-          {/* Username */}
-          <div className="text-center">
-            <div className="font-['Lexend:SemiBold',_sans-serif] text-[13px] text-neutral-50">
-              {currentUser.name}
-            </div>
-          </div>
+              {/* Pending Approvals - Only show during registration */}
+              {!leagueStatus.hasStarted && (
+                <>
+                  <div className="bg-neutral-900 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-1">
+                          Pending Approvals
+                        </div>
+                        <div className="font-['Lexend:Bold',_sans-serif] text-[18px] text-neutral-50">
+                          {leagueStats.pendingApprovalsCount}
+                        </div>
+                      </div>
+                      {leagueStats.pendingApprovalsCount > 0 && (
+                        <div className="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full">
+                          <div className="font-['Lexend:SemiBold',_sans-serif] text-[10px]">
+                            {leagueStats.pendingApprovalsCount}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-          {/* Divider */}
-          <div className="border-t border-neutral-800"></div>
+                  {/* Divider */}
+                  <div className="border-t border-neutral-800"></div>
+                </>
+              )}
 
-          {/* Week */}
-          <div className="bg-neutral-900 rounded-lg p-2 text-center">
-            <div className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-1">
-              Week
-            </div>
-            <div className="font-['Lexend:Bold',_sans-serif] text-[16px] text-neutral-50">
-              {leagueInfo.currentWeek}
-            </div>
-          </div>
+              {/* Payment Status */}
+              <div className="bg-neutral-900 rounded-lg p-3">
+                <div className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-2">
+                  Payment Status
+                </div>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="font-['Lexend:Regular',_sans-serif] text-[11px] text-neutral-300">
+                      Paid
+                    </div>
+                    <div className="font-['Lexend:SemiBold',_sans-serif] text-[11px] text-green-400">
+                      {leagueStats.paidCount}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="font-['Lexend:Regular',_sans-serif] text-[11px] text-neutral-300">
+                      Due
+                    </div>
+                    <div className="font-['Lexend:SemiBold',_sans-serif] text-[11px] text-yellow-400">
+                      {leagueStats.dueCount}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="font-['Lexend:Regular',_sans-serif] text-[11px] text-neutral-300">
+                      Late
+                    </div>
+                    <div className="font-['Lexend:SemiBold',_sans-serif] text-[11px] text-red-400">
+                      {leagueStats.lateCount}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-          {/* Place */}
-          <div className="bg-neutral-900 rounded-lg p-2 text-center">
-            <div className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-1">
-              Place
-            </div>
-            <div className="font-['Lexend:Bold',_sans-serif] text-[16px] text-blue-400">
-              {userStatus.standingsPlace}{getPlaceSuffix(userStatus.standingsPlace)}
-            </div>
-          </div>
+              {/* Current Week Progress */}
+              <div className="bg-neutral-900 rounded-lg p-3">
+                <div className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-2">
+                  Week {leagueInfo.currentWeek} Matches
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="font-['Lexend:Bold',_sans-serif] text-[16px] text-neutral-50">
+                    {leagueStats.completedMatches} / {leagueStats.totalMatches}
+                  </div>
+                  <div className="font-['Lexend:Regular',_sans-serif] text-[10px] text-neutral-400">
+                    Completed
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* User Profile Pic */}
+              <div className="flex justify-center">
+                <div className="relative size-14 rounded-full overflow-hidden bg-neutral-800">
+                  <img
+                    src={currentUser.avatar}
+                    alt={currentUser.name}
+                    className="size-full object-cover"
+                  />
+                </div>
+              </div>
 
-          {/* Divider */}
-          <div className="border-t border-neutral-800"></div>
+              {/* Username */}
+              <div className="text-center">
+                <div className="font-['Lexend:SemiBold',_sans-serif] text-[13px] text-neutral-50">
+                  {currentUser.name}
+                </div>
+              </div>
 
-          {/* Match */}
-          <button
+              {/* Divider */}
+              <div className="border-t border-neutral-800"></div>
+
+              {/* Week */}
+              <div className="bg-neutral-900 rounded-lg p-2 text-center">
+                <div className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-1">
+                  Week
+                </div>
+                <div className="font-['Lexend:Bold',_sans-serif] text-[16px] text-neutral-50">
+                  {leagueInfo.currentWeek}
+                </div>
+              </div>
+
+              {/* Place */}
+              <div className="bg-neutral-900 rounded-lg p-2 text-center">
+                <div className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-1">
+                  Place
+                </div>
+                <div className="font-['Lexend:Bold',_sans-serif] text-[16px] text-blue-400">
+                  {userStatus.standingsPlace === 0 ? "-" : `${userStatus.standingsPlace}${getPlaceSuffix(userStatus.standingsPlace)}`}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-neutral-800"></div>
+
+              {/* Match */}
+              <button
             onClick={() => onOpenMessages(currentMatchup.opponent)}
             className="bg-neutral-900 rounded-lg p-2 w-full relative hover:bg-neutral-800 transition-colors cursor-pointer"
           >
@@ -1896,6 +2405,8 @@ function LeagueInfoWidget({
               )}
             </div>
           </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -2033,12 +2544,19 @@ function Dashboard() {
   const [currentWeekForfeit, setCurrentWeekForfeit] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [showMatchLobby, setShowMatchLobby] = useState(false);
-  const [matchLobbyTime, setMatchLobbyTime] = useState<Date | null>(() => {
-    // Initialize with demo match time (3 minutes from now)
-    const time = new Date();
-    time.setMinutes(time.getMinutes() + 3);
-    return time;
-  });
+  const [matchLobbyTime, setMatchLobbyTime] = useState<Date | null>(null);
+  const [isAdminView, setIsAdminView] = useState(false);
+  const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+  const [selectedDivision, setSelectedDivision] = useState(divisions[0]?.id || "div1");
+  const [colorPickerDivision, setColorPickerDivision] = useState<any | null>(null);
+  const [divisionColors, setDivisionColors] = useState<Record<string, string>>(
+    divisions.reduce((acc, div) => ({ ...acc, [div.id]: div.color }), {})
+  );
+  const [pressTimer, setPressTimer] = useState<any>(null);
+  const [selectedHue, setSelectedHue] = useState(0);
+  
+  // Check if current user is admin
+  const isAdmin = currentUser.role === "OWNER" || currentUser.role === "THE_MAN";
 
   // Check if we should show match lobby (5 mins before match time)
   useEffect(() => {
@@ -2160,56 +2678,325 @@ function Dashboard() {
 
   return (
     <div className="w-full min-h-screen p-4">
-      <div className="mb-6 relative">
-        <div className="absolute top-0 right-0 flex gap-2">
-          {/* Demo: Trigger match lobby */}
-          <button
-            onClick={() => {
-              const time = new Date();
-              time.setMinutes(time.getMinutes() + 3);
-              setMatchLobbyTime(time);
-              setShowMatchLobby(true);
-            }}
-            className="text-neutral-500 hover:text-neutral-300 transition-colors px-3 py-1 text-[11px] border border-neutral-700 rounded"
-          >
-            Demo Lobby
-          </button>
+      <div className="mb-6">
+        {/* Top row with title and info button */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="font-['Lexend:Bold',_sans-serif] text-[20px] text-neutral-50">
+            League Name
+          </div>
+          
           <button
             onClick={() => setShowInfoModal(true)}
-            className="text-neutral-400 hover:text-neutral-200 transition-colors p-2 -m-2"
+            className="text-neutral-400 hover:text-neutral-200 transition-colors p-2 flex-shrink-0"
           >
-            <Information size={24} />
+            <Information size={20} />
           </button>
         </div>
-        <div className="font-['Lexend:Bold',_sans-serif] text-[24px] text-neutral-50 mb-1">
-          League Name
-        </div>
-        <div className="font-['Lexend:Regular',_sans-serif] text-[13px] text-neutral-400">
+        
+        {/* View toggle and announce button */}
+        {isAdmin && (
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2 bg-neutral-800/50 rounded-lg p-1 border border-neutral-700/50">
+              <button
+                onClick={() => setIsAdminView(false)}
+                className={`font-['Lexend:Regular',_sans-serif] text-[10px] px-2.5 py-1.5 rounded-md transition-all whitespace-nowrap ${
+                  !isAdminView 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-neutral-400 hover:text-neutral-200'
+                }`}
+              >
+                Player View
+              </button>
+              <button
+                onClick={() => setIsAdminView(true)}
+                className={`font-['Lexend:Regular',_sans-serif] text-[10px] px-2.5 py-1.5 rounded-md transition-all whitespace-nowrap ${
+                  isAdminView 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-neutral-400 hover:text-neutral-200'
+                }`}
+              >
+                Admin View
+              </button>
+            </div>
+            
+            {isAdminView && (
+              <button
+                onClick={() => setShowAnnouncementModal(true)}
+                className="text-neutral-400 hover:text-neutral-200 transition-colors px-2.5 py-1.5 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg border border-neutral-700/50 flex items-center gap-1.5 flex-shrink-0"
+              >
+                <Megaphone size={14} />
+                <span className="font-['Lexend:Regular',_sans-serif] text-[10px]">Announce</span>
+              </button>
+            )}
+          </div>
+        )}
+        
+        <div className="font-['Lexend:Regular',_sans-serif] text-[12px] text-neutral-400">
           Division: Name Rank: 5.99
         </div>
-        <div className="font-['Lexend:Regular',_sans-serif] text-[13px] text-neutral-400">
+        <div className="font-['Lexend:Regular',_sans-serif] text-[12px] text-neutral-400">
           Payment Due: Every Sunday at 12AM CST
         </div>
       </div>
 
-      <div className="flex gap-4 w-full h-[600px]">
-        <LeagueInfoWidget 
-          onOpenMessages={(opponent) => {
-            setMessagingOpponent(opponent);
-            setHasUnreadMessages(false); // Clear unread when opening
-          }} 
-          currentMatchSchedule={currentMatchSchedule}
-          hasUnreadMessages={hasUnreadMessages}
-        />
-        <ScheduleWidget 
-          onOpenMessages={(opponent) => setMessagingOpponent(opponent)}
-          currentWeekForfeit={currentWeekForfeit}
-        />
-        <StandingsWidget 
-          isExpanded={standingsExpanded} 
-          setIsExpanded={setStandingsExpanded} 
-        />
+      {isAdminView ? (
+        <div className="space-y-4 w-full">
+          {/* Division Selector - Scrollable */}
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
+            {divisions.map((division) => {
+              const currentColor = divisionColors[division.id] || division.color;
+              
+              // Check if it's a hue value or named color
+              const isHueColor = currentColor.startsWith('hue-');
+              const hueValue = isHueColor ? parseInt(currentColor.replace('hue-', '')) : null;
+              
+              const colorDotMap: Record<string, string> = {
+                blue: "bg-blue-500",
+                purple: "bg-purple-500",
+                green: "bg-green-500",
+                orange: "bg-orange-500",
+                red: "bg-red-500",
+                yellow: "bg-yellow-500",
+                pink: "bg-pink-500",
+                cyan: "bg-cyan-500",
+                indigo: "bg-indigo-500",
+                lime: "bg-lime-500",
+                teal: "bg-teal-500",
+                fuchsia: "bg-fuchsia-500",
+              };
+              
+              const handleMouseDown = () => {
+                const timer = setTimeout(() => {
+                  // Initialize hue based on current color
+                  if (isHueColor && hueValue !== null) {
+                    setSelectedHue(hueValue);
+                  } else {
+                    // Default hues for named colors
+                    const namedColorHues: Record<string, number> = {
+                      red: 0, orange: 30, yellow: 60, lime: 90,
+                      green: 120, teal: 150, cyan: 180, blue: 210,
+                      indigo: 240, purple: 270, fuchsia: 300, pink: 330
+                    };
+                    setSelectedHue(namedColorHues[currentColor] || 210);
+                  }
+                  setColorPickerDivision(division);
+                }, 500); // 500ms long press
+                setPressTimer(timer);
+              };
+              
+              const handleMouseUp = () => {
+                if (pressTimer) {
+                  clearTimeout(pressTimer);
+                  setPressTimer(null);
+                }
+              };
+              
+              const handleClick = () => {
+                if (!pressTimer) return; // Don't select if long-pressed
+                setSelectedDivision(division.id);
+              };
+              
+              return (
+                <button
+                  key={division.id}
+                  onClick={handleClick}
+                  onMouseDown={handleMouseDown}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  onTouchStart={handleMouseDown}
+                  onTouchEnd={handleMouseUp}
+                  className={`flex-shrink-0 px-4 py-2 rounded-xl border transition-all ${
+                    selectedDivision === division.id
+                      ? 'bg-blue-600 border-blue-500 text-white'
+                      : 'bg-neutral-800/50 border-neutral-700/50 text-neutral-400 hover:text-neutral-200 hover:border-neutral-600'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 justify-center mb-1">
+                    {isHueColor ? (
+                      <div 
+                        className="size-2 rounded-full" 
+                        style={{ backgroundColor: `hsl(${hueValue}, 70%, 55%)` }}
+                      />
+                    ) : (
+                      <div className={`size-2 rounded-full ${colorDotMap[currentColor]}`} />
+                    )}
+                    <div className="font-['Lexend:SemiBold',_sans-serif] text-[11px] whitespace-nowrap">
+                      {division.name}
+                    </div>
+                  </div>
+                  <div className="font-['Lexend:Regular',_sans-serif] text-[9px] opacity-80">
+                    {division.playerCount} players
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Admin Content and Standings */}
+          <div className="flex gap-4 w-full">
+            {/* Admin View Layout */}
+            <div className="flex-1 space-y-4">
+              {/* Stats Cards Grid - 2x2 */}
+              <div className="grid grid-cols-2 gap-4">
+              {/* Total Players */}
+              <div className="bg-[#000000] rounded-2xl border border-neutral-800 p-4">
+                <div className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-1">
+                  Total Players ({divisions.find(d => d.id === selectedDivision)?.name})
+                </div>
+                <div className="font-['Lexend:Bold',_sans-serif] text-[24px] text-neutral-50">
+                  {divisions.find(d => d.id === selectedDivision)?.playerCount || 0}
+                </div>
+              </div>
+
+              {/* Pending Approvals - Only show during registration */}
+              {!leagueStatus.hasStarted ? (
+                <div className="bg-[#000000] rounded-2xl border border-neutral-800 p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-1">
+                        Pending Approvals
+                      </div>
+                      <div className="font-['Lexend:Bold',_sans-serif] text-[24px] text-neutral-50">
+                        {leagueStats.pendingApprovalsCount}
+                      </div>
+                    </div>
+                    {leagueStats.pendingApprovalsCount > 0 && (
+                      <div className="bg-yellow-500/20 text-yellow-400 px-3 py-1.5 rounded-full">
+                        <div className="font-['Lexend:SemiBold',_sans-serif] text-[12px]">
+                          {leagueStats.pendingApprovalsCount}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-[#000000] rounded-2xl border border-neutral-800 p-4">
+                  <div className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-2">
+                    Payment Status
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="font-['Lexend:Regular',_sans-serif] text-[11px] text-neutral-300">
+                        Paid
+                      </div>
+                      <div className="font-['Lexend:SemiBold',_sans-serif] text-[11px] text-green-400">
+                        {leagueStats.paidCount}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="font-['Lexend:Regular',_sans-serif] text-[11px] text-neutral-300">
+                        Due
+                      </div>
+                      <div className="font-['Lexend:SemiBold',_sans-serif] text-[11px] text-yellow-400">
+                        {leagueStats.dueCount}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="font-['Lexend:Regular',_sans-serif] text-[11px] text-neutral-300">
+                        Late
+                      </div>
+                      <div className="font-['Lexend:SemiBold',_sans-serif] text-[11px] text-red-400">
+                        {leagueStats.lateCount}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Payment Status (when league hasn't started) or Prize Pool */}
+              {!leagueStatus.hasStarted ? (
+                <div className="bg-[#000000] rounded-2xl border border-neutral-800 p-4">
+                  <div className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-2">
+                    Payment Status
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="font-['Lexend:Regular',_sans-serif] text-[11px] text-neutral-300">
+                        Paid
+                      </div>
+                      <div className="font-['Lexend:SemiBold',_sans-serif] text-[11px] text-green-400">
+                        {leagueStats.paidCount}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="font-['Lexend:Regular',_sans-serif] text-[11px] text-neutral-300">
+                        Due
+                      </div>
+                      <div className="font-['Lexend:SemiBold',_sans-serif] text-[11px] text-yellow-400">
+                        {leagueStats.dueCount}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="font-['Lexend:Regular',_sans-serif] text-[11px] text-neutral-300">
+                        Late
+                      </div>
+                      <div className="font-['Lexend:SemiBold',_sans-serif] text-[11px] text-red-400">
+                        {leagueStats.lateCount}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-[#000000] rounded-2xl border border-neutral-800 p-4">
+                  <div className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-1">
+                    Total Prize Pool
+                  </div>
+                  <div className="font-['Lexend:Bold',_sans-serif] text-[24px] text-green-400">
+                    ${leagueInfo.potTotal}
+                  </div>
+                </div>
+              )}
+
+              {/* Current Week Progress */}
+              <div className="bg-[#000000] rounded-2xl border border-neutral-800 p-4">
+                <div className="font-['Lexend:Regular',_sans-serif] text-[9px] text-neutral-400 mb-1">
+                  Week {leagueInfo.currentWeek} Matches
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="font-['Lexend:Bold',_sans-serif] text-[24px] text-neutral-50">
+                    {leagueStats.completedMatches} / {leagueStats.totalMatches}
+                  </div>
+                  <div className="font-['Lexend:Regular',_sans-serif] text-[10px] text-neutral-400">
+                    Completed
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Management Widget */}
+            <div className="h-[400px]">
+              <ManagementWidget divisionColors={divisionColors} />
+            </div>
+          </div>
+
+          {/* Standings Widget */}
+          <StandingsWidget 
+            isExpanded={standingsExpanded} 
+            setIsExpanded={setStandingsExpanded} 
+          />
+        </div>
       </div>
+      ) : (
+        <div className="flex gap-4 w-full h-[600px]">
+          <LeagueInfoWidget 
+            onOpenMessages={(opponent) => {
+              setMessagingOpponent(opponent);
+              setHasUnreadMessages(false); // Clear unread when opening
+            }} 
+            currentMatchSchedule={currentMatchSchedule}
+            hasUnreadMessages={hasUnreadMessages}
+            isAdminView={isAdminView}
+          />
+          <ScheduleWidget 
+            onOpenMessages={(opponent) => setMessagingOpponent(opponent)}
+            currentWeekForfeit={currentWeekForfeit}
+          />
+          <StandingsWidget 
+            isExpanded={standingsExpanded} 
+            setIsExpanded={setStandingsExpanded} 
+          />
+        </div>
+      )}
 
       {/* Match Lobby Widget */}
       {showMatchLobby && matchLobbyTime && (
@@ -2239,6 +3026,162 @@ function Dashboard() {
           onScheduleConfirmed={handleScheduleConfirmed}
           onNewMessage={() => setHasUnreadMessages(true)}
         />
+      )}
+
+      {/* Announcement Modal */}
+      {showAnnouncementModal && createPortal(
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowAnnouncementModal(false)}
+        >
+          <div
+            className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <div className="font-['Lexend:Bold',_sans-serif] text-[18px] text-neutral-50 mb-1">
+                  Send Announcement
+                </div>
+                <div className="font-['Lexend:Regular',_sans-serif] text-[12px] text-neutral-400">
+                  Message will be sent to all league participants
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAnnouncementModal(false)}
+                className="text-neutral-400 hover:text-neutral-200 transition-colors p-2"
+              >
+                <Close size={20} />
+              </button>
+            </div>
+            <textarea
+              placeholder="Type your announcement here..."
+              className="w-full bg-neutral-800 text-neutral-200 rounded-lg px-3 py-2 font-['Lexend:Regular',_sans-serif] text-[13px] border border-neutral-700 mb-4 min-h-[120px] resize-none focus:outline-none focus:border-blue-500"
+            />
+            <button
+              onClick={() => {
+                // TODO: API call to send announcement
+                setShowAnnouncementModal(false);
+              }}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[13px] transition-colors flex items-center justify-center gap-2"
+            >
+              <Megaphone size={16} />
+              Send to All Players
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Color Picker Modal */}
+      {colorPickerDivision && createPortal(
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          onClick={() => setColorPickerDivision(null)}
+        >
+          <div
+            className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-sm w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <div className="font-['Lexend:Bold',_sans-serif] text-[18px] text-neutral-50 mb-1">
+                  Division Color
+                </div>
+                <div className="font-['Lexend:Regular',_sans-serif] text-[12px] text-neutral-400">
+                  Choose a color for {colorPickerDivision.name}
+                </div>
+              </div>
+              <button
+                onClick={() => setColorPickerDivision(null)}
+                className="text-neutral-400 hover:text-neutral-200 transition-colors p-2"
+              >
+                <Close size={20} />
+              </button>
+            </div>
+            
+            {/* Hue Slider */}
+            <div className="space-y-4">
+              {/* Preview Circle */}
+              <div className="flex flex-col items-center gap-3">
+                <div 
+                  className="size-24 rounded-full shadow-xl ring-4 ring-neutral-800"
+                  style={{ backgroundColor: `hsl(${selectedHue}, 70%, 55%)` }}
+                />
+                <div className="text-center">
+                  <div className="font-['Lexend:SemiBold',_sans-serif] text-[13px] text-neutral-200">
+                    Preview
+                  </div>
+                  <div className="font-['Lexend:Regular',_sans-serif] text-[11px] text-neutral-500">
+                    HSL({Math.round(selectedHue)}, 70%, 55%)
+                  </div>
+                </div>
+              </div>
+              
+              {/* Hue Slider */}
+              <div className="space-y-2">
+                <label className="font-['Lexend:SemiBold',_sans-serif] text-[11px] text-neutral-300">
+                  Hue: {Math.round(selectedHue)}°
+                </label>
+                <div className="relative h-10 rounded-xl overflow-hidden border-2 border-neutral-700" style={{
+                  background: 'linear-gradient(to right, hsl(0, 70%, 55%), hsl(30, 70%, 55%), hsl(60, 70%, 55%), hsl(90, 70%, 55%), hsl(120, 70%, 55%), hsl(150, 70%, 55%), hsl(180, 70%, 55%), hsl(210, 70%, 55%), hsl(240, 70%, 55%), hsl(270, 70%, 55%), hsl(300, 70%, 55%), hsl(330, 70%, 55%), hsl(360, 70%, 55%))'
+                }}>
+                  <input
+                    type="range"
+                    min="0"
+                    max="360"
+                    value={selectedHue}
+                    onChange={(e) => setSelectedHue(parseInt(e.target.value))}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div 
+                    className="absolute top-1/2 -translate-y-1/2 w-1 h-full bg-white shadow-[0_0_8px_rgba(0,0,0,0.5)] pointer-events-none transition-all"
+                    style={{ left: `${(selectedHue / 360) * 100}%`, transform: 'translate(-50%, -50%)' }}
+                  />
+                  <div 
+                    className="absolute top-1/2 -translate-y-1/2 size-6 rounded-full bg-white shadow-lg pointer-events-none border-2 border-neutral-900"
+                    style={{ 
+                      left: `${(selectedHue / 360) * 100}%`, 
+                      transform: 'translate(-50%, -50%)',
+                      backgroundColor: `hsl(${selectedHue}, 70%, 55%)`
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Save Button */}
+              <button
+                onClick={() => {
+                  const hueToColorName = (hue: number) => {
+                    if (hue >= 0 && hue < 15) return 'red';
+                    if (hue >= 15 && hue < 45) return 'orange';
+                    if (hue >= 45 && hue < 75) return 'yellow';
+                    if (hue >= 75 && hue < 105) return 'lime';
+                    if (hue >= 105 && hue < 135) return 'green';
+                    if (hue >= 135 && hue < 165) return 'teal';
+                    if (hue >= 165 && hue < 195) return 'cyan';
+                    if (hue >= 195 && hue < 225) return 'blue';
+                    if (hue >= 225 && hue < 255) return 'indigo';
+                    if (hue >= 255 && hue < 285) return 'purple';
+                    if (hue >= 285 && hue < 315) return 'fuchsia';
+                    if (hue >= 315 && hue < 345) return 'pink';
+                    return 'red';
+                  };
+                  
+                  setDivisionColors({
+                    ...divisionColors,
+                    [colorPickerDivision.id]: `hue-${selectedHue}`
+                  });
+                  setColorPickerDivision(null);
+                }}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-['Lexend:SemiBold',_sans-serif] text-[13px] transition-colors"
+              >
+                Save Color
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* Info Modal */}
